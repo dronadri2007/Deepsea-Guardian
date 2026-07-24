@@ -94,30 +94,20 @@ export default function Home() {
       <section className="py-20">
         <Container>
           <SectionHeading eyebrow="How it works" title="From raw signals to real action." center />
-          {/* Scrollable on mobile, 5-col grid on md+ */}
-          <div className="-mx-4 overflow-x-auto px-4 sm:-mx-6 sm:px-6 md:overflow-visible">
-            <div className="flex gap-4 md:grid md:grid-cols-5" style={{ minWidth: 'max-content' }}>
-              {pipeline.map((p, i) => (
-                <div
-                  key={p.step}
-                  className="card-hover w-52 flex-shrink-0 rounded-2xl border border-teal/15 bg-white p-5 shadow-sm md:w-auto"
-                >
-                  <div className="grid h-9 w-9 place-items-center rounded-full bg-teal font-head text-sm font-bold text-white shadow-sm">
-                    {p.step}
-                  </div>
-                  <h3 className="mt-3 font-head font-semibold text-ink">{p.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-textd/70">{p.text}</p>
-                  {/* Connector arrow — desktop only */}
-                  {i < pipeline.length - 1 && (
-                    <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 translate-x-full text-teal/40 px-1 text-lg leading-none pointer-events-none">
-                      ›
-                    </div>
-                  )}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {pipeline.map((p) => (
+              <div
+                key={p.step}
+                className="card-hover rounded-2xl border border-teal/15 bg-white p-5 shadow-sm"
+              >
+                <div className="grid h-9 w-9 place-items-center rounded-full bg-teal font-head text-sm font-bold text-white shadow-sm">
+                  {p.step}
                 </div>
-              ))}
-            </div>
+                <h3 className="mt-3 font-head font-semibold text-ink">{p.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-textd/70">{p.text}</p>
+              </div>
+            ))}
           </div>
-          <p className="mt-3 text-center text-xs text-textd/40 md:hidden">← scroll to see all steps →</p>
         </Container>
       </section>
 
