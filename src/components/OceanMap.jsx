@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react'
-import { zones as allZones, oceanHealthIndex } from '../data/mockData.js'
+import { useEffect, useRef, useState } from 'react'
+import { zones as allZones, oceanHealthIndex, healthBand, detections } from '../data/mockData.js'
 
 const riskColor = { high: '#ff5a4d', moderate: '#ffb020', low: '#12b5b0' }
+const sevLabel = ['None', 'Low', 'Moderate', 'High']
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Noise helpers for realistic geological FBM noise
@@ -198,6 +199,7 @@ function renderTerrain(canvas) {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function OceanMap({ zones = allZones, height = 420, showHeat = true }) {
   const canvasRef = useRef(null)
+  const [selected, setSelected] = useState(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -313,11 +315,14 @@ export default function OceanMap({ zones = allZones, height = 420, showHeat = tr
         />
       ))}
 
-      {/* ── Zone markers + hover tooltips ── */}
+      {/* ── Zone markers (clickable) + hover tooltips ── */}
       {zones.map((z) => (
-        <div
+        <button
+          type="button"
           key={z.id}
-          className="group absolute -translate-x-1/2 -translate-y-1/2"
+          onClick={() => setSelected(z)}
+          aria-label={`Zone ${z.name}, health ${oceanHealthIndex(z)}, ${z.risk} risk`}
+          className={`group absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${selected?.id === z.id ? 'z-20' : ''}`}
           style={{ left: `${z.x}%`, top: `${z.y}%` }}
         >
           <span
@@ -325,10 +330,10 @@ export default function OceanMap({ zones = allZones, height = 420, showHeat = tr
             style={{ background: riskColor[z.risk] }}
           />
           <span
-            className="relative block h-3.5 w-3.5 rounded-full"
+            className="relative block h-3.5 w-3.5 rounded-full transition-transform group-hover:scale-125"
             style={{
               background: riskColor[z.risk],
-              boxShadow: `0 0 10px 4px ${riskColor[z.risk]}70, 0 0 0 2px #ffffff22`,
+              boxShadow: `0 0 10px 4px ${riskColor[z.risk]}70, 0 0 0 2px #ffffff${selected?.id === z.id ? 'cc' : '22'}`,
             }}
           />
           <div className="pointer-events-none absolute left-1/2 top-5 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded-xl border border-white/15 bg-ink2/95 px-3 py-2 text-xs text-white shadow-xl backdrop-blur-sm group-hover:block">
@@ -336,11 +341,79 @@ export default function OceanMap({ zones = allZones, height = 420, showHeat = tr
             <div className="font-semibold">{z.name}</div>
             <div className="mt-0.5 text-textmut">
               Health {oceanHealthIndex(z)} ·{' '}
-              <span style={{ color: riskColor[z.risk] }}>{z.risk} risk</span>
+              <span style={{ color: riskColor[z.risk] }}>{z.risk} risk</span> · click for details
             </div>
           </div>
-        </div>
+        </button>
       ))}
+
+      {/* ── Zone detail panel (slides in on click) ── */}
+      {selected && (() => {
+        const score = oceanHealthIndex(selected)
+        const band = healthBand(score)
+        const related = detections.filter((d) => d.zone === selected.id)
+        const bars = [
+          { label: 'Plastic', v: selected.plastic, max: 3, txt: sevLabel[selected.plastic] },
+          { label: 'Bleaching', v: selected.bleaching, max: 3, txt: sevLabel[selected.bleaching] },
+          { label: 'Ghost nets', v: selected.ghostNets, max: 5, txt: `${selected.ghostNets}` },
+        ]
+        return (
+          <div className="absolute inset-y-0 right-0 z-30 w-full max-w-[280px] overflow-y-auto border-l border-white/10 bg-ink2/95 p-4 text-white shadow-2xl backdrop-blur-md">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="text-[10px] uppercase tracking-wide text-textmut">Zone {selected.id}</div>
+                <h3 className="font-head text-base font-bold leading-tight">{selected.name}</h3>
+                <div className="text-xs text-textmut">{selected.region}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+                aria-label="Close zone details"
+                className="rounded-lg p-1 text-textmut hover:bg-white/10 hover:text-white"
+              >✕</button>
+            </div>
+
+            <div className="mt-4 flex items-end gap-2">
+              <span className="font-head text-4xl font-extrabold" style={{ color: band.color }}>{score}</span>
+              <span className="pb-1 text-xs text-textmut">/100 · {band.label}</span>
+            </div>
+            <div className="mt-1 text-[11px] text-textmut">Ocean Health Index</div>
+
+            <div className="mt-4 space-y-2.5">
+              {bars.map((b) => (
+                <div key={b.label}>
+                  <div className="flex justify-between text-[11px] text-textmut">
+                    <span>{b.label}</span><span>{b.txt}</span>
+                  </div>
+                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                    <div className="h-full rounded-full" style={{ width: `${(b.v / b.max) * 100}%`, background: band.color }} />
+                  </div>
+                </div>
+              ))}
+              <div className="flex items-center justify-between pt-1 text-xs">
+                <span className="text-textmut">Predicted risk</span>
+                <span className="font-semibold capitalize" style={{ color: riskColor[selected.risk] }}>{selected.risk}</span>
+              </div>
+            </div>
+
+            <div className="mt-4 border-t border-white/10 pt-3">
+              <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-textmut">Recent detections</div>
+              {related.length ? (
+                <ul className="space-y-1.5">
+                  {related.map((d) => (
+                    <li key={d.id} className="rounded-lg bg-white/5 px-2.5 py-1.5 text-xs">
+                      <div className="font-medium text-white">{d.type}</div>
+                      <div className="text-[11px] text-textmut">{d.confidence ? `${d.confidence}% · ` : ''}{d.time}</div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-textmut">No active detections in this zone.</p>
+              )}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ── Legend ── */}
       <div className="absolute bottom-3 left-3 flex flex-wrap gap-3 rounded-xl border border-white/10 bg-black/65 px-3 py-2 text-xs text-white shadow-lg backdrop-blur-sm">
