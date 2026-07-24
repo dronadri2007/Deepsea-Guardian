@@ -4,13 +4,23 @@ import Seo from '../components/Seo.jsx'
 
 export default function NotFound() {
   return (
-    <div className="grid min-h-[70vh] place-items-center bg-ink px-4 text-center text-white">
+    <div className="grid min-h-[75vh] place-items-center bg-ink px-4 text-center text-white">
       <Seo title="Lost at sea — DeepSea Guardian" description="Page not found." />
-      <div>
-        <Waves className="mx-auto h-14 w-14 text-teallite" aria-hidden="true" />
-        <h1 className="mt-4 font-head text-5xl font-extrabold">Lost at sea.</h1>
-        <p className="mt-3 text-textmut">This page drifted off the map.</p>
-        <Link to="/" className="mt-6 inline-block rounded-xl bg-teal px-6 py-3 font-semibold text-white hover:scale-[1.03]">
+      <div className="flex flex-col items-center">
+        {/* Animated wave icon */}
+        <span className="animate-bounce">
+          <Waves className="mx-auto h-16 w-16 text-teallite drop-shadow-[0_0_18px_rgba(79,208,203,0.4)]" aria-hidden="true" />
+        </span>
+        <h1 className="mt-6 font-head text-5xl font-extrabold tracking-tight sm:text-7xl">
+          Lost at sea.
+        </h1>
+        <p className="mt-4 max-w-sm leading-relaxed text-textmut">
+          This page drifted off the map. Let's get you back to safe waters.
+        </p>
+        <Link
+          to="/"
+          className="mt-8 inline-flex items-center gap-2 rounded-xl bg-teal px-7 py-3.5 font-semibold text-white shadow-lg shadow-teal/30 btn-transition"
+        >
           Back to safe waters
         </Link>
       </div>
