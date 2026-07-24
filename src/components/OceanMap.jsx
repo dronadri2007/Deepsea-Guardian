@@ -35,20 +35,32 @@ function fbm(x, y, octaves = 4) {
   return v
 }
 
+// Ridged multifractal — sharp crests where noise peaks, for rugged ridge terrain.
+function ridgeFbm(x, y, octaves = 5) {
+  let v = 0, a = 0.5, f = 1
+  for (let i = 0; i < octaves; i++) {
+    const n = 1 - Math.abs(2 * vnoise(x * f, y * f) - 1)
+    v += n * n * a
+    a *= 0.5
+    f *= 2.1
+  }
+  return v
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  NOAA Bathymetric Color Ramp (Vibrant Cobalt -> Turquoise -> Neon Lime)
 // ─────────────────────────────────────────────────────────────────────────────
 function bathyRGB(t) {
   const stops = [
-    [0.00, [  4,  16, 178]],   // deepest cobalt
-    [0.15, [  8,  32, 210]],   // royal blue
-    [0.30, [ 10,  64, 230]],   // bright cobalt
-    [0.45, [ 12, 128, 222]],   // electric blue
-    [0.58, [  8, 175, 192]],   // turquoise
-    [0.70, [ 10, 208, 138]],   // teal
-    [0.82, [ 30, 228,  82]],   // emerald green
-    [0.92, [ 85, 245,  35]],   // bright green
-    [1.00, [155, 255,  18]],   // neon lime
+    [0.00, [  4,  16, 150]],   // deepest cobalt
+    [0.13, [  8,  34, 205]],   // royal blue
+    [0.28, [ 10,  66, 232]],   // bright cobalt
+    [0.44, [ 12, 130, 224]],   // electric blue
+    [0.57, [  8, 178, 196]],   // turquoise
+    [0.70, [ 12, 210, 140]],   // teal
+    [0.82, [ 34, 230,  86]],   // emerald green
+    [0.92, [ 90, 246,  38]],   // bright green
+    [1.00, [160, 255,  20]],   // neon lime
   ]
   for (let i = 0; i < stops.length - 1; i++) {
     const [t0, c0] = stops[i]
@@ -94,38 +106,27 @@ function renderTerrain(canvas) {
       // Normalize perp roughly to [0, 1] across the screen diagonal
       const normPerp = (perp + 0.6) / 1.2
 
-      // ── 1. Base Continental Slope ──
-      // Deep basin on the left, rising to a shallow shelf on the right
-      const base = Math.pow(Math.max(0, Math.min(1, normPerp)), 1.5)
+      // ── 1. Base Continental Slope (deep basin -> shallow shelf) ──
+      const base = Math.pow(Math.max(0, Math.min(1, normPerp)), 1.4)
 
-      // ── 2. "Sudden" Fault Scarp (Step Erosion) ──
-      // Sharp, steep tectonic drop-off cliff around normPerp = 0.38
-      const scarp = 0.12 * Math.tanh((normPerp - 0.38) * 22.0)
+      // ── 2. "Sudden" Fault Scarp (sharp tectonic drop-off) ──
+      const scarp = 0.14 * Math.tanh((normPerp - 0.38) * 20.0)
 
-      // ── 3. "Normal" Scalloped Erosion (Gullies running downslope) ──
-      // Parallel erosion channels perpendicular to the shelf edge (normPerp = 0.6)
-      const gullies = 0.07 * Math.sin(along * 28.0) * Math.exp(-Math.pow((normPerp - 0.62) * 6.0, 2))
+      // ── 3. Directional ridge systems (parallel valleys running along the slope) ──
+      let dr = 1 - Math.abs(Math.sin((perp * 10.5 + fbm(nx * 3, ny * 3, 3) * 2.5) * Math.PI))
+      const dirRidge = Math.pow(dr, 1.5) * 0.16
 
-      // ── 4. Organic Ruggedness (Shelf vs Abyssal Plain) ──
-      // The deep abyssal plain is smooth sediment. The shallow shelf is highly eroded rock.
-      // We mask the FBM noise so it only textures the slope and shelf.
-      const shelfMask = Math.max(0, Math.min(1, (normPerp - 0.22) * 3.0))
-      const ns = 8.0
-      const rug = (fbm(nx * ns, ny * ns, 5) - 0.5) * 0.24 * shelfMask
+      // ── 4. Broad ridged multifractal crests (rugged rocky relief everywhere) ──
+      const crests = (ridgeFbm(nx * 7.0, ny * 7.0, 6) - 0.4) * 0.30
 
-      // ── 4b. Sharp Ridged Crests (rugged abyssal hills / ridge lines everywhere) ──
-      // Ridged multifractal — abs of noise creates sharp peaks, squared to sharpen the crests.
-      const ridged = 1 - Math.abs(2 * fbm(nx * 6.5, ny * 6.5, 5) - 1)
-      const crests = ridged * ridged * 0.15 * (0.4 + 0.6 * shelfMask)
+      // ── 5. Fine rocky detail ──
+      const fine = (fbm(nx * 24.0, ny * 24.0, 3) - 0.5) * 0.055
 
-      // ── 5. Uneven Crests at the Ocean Bottom (Abyssal Hills / Sediment Waves) ──
-      // Low-frequency diagonal ridges parallel to the main slope, strongest on the deep floor.
-      const bottomCrests = 0.07 * Math.sin(perp * Math.PI * 5.5) * Math.cos(along * Math.PI * 2.2)
-      const bottomNoise = (fbm(nx * 3.0, ny * 3.0, 4) - 0.5) * 0.09
-      const bottomFeatures = (bottomCrests + bottomNoise) * (1.0 - shelfMask * 0.65)
+      // ── 6. Gentle deep-floor undulation (sediment waves) ──
+      const floor = 0.05 * Math.sin(perp * Math.PI * 4.0) * Math.cos(along * Math.PI * 1.6)
 
       // Combine layers
-      const h = base * 0.7 + scarp + gullies + rug + crests + bottomFeatures
+      const h = base * 0.55 + scarp + dirRidge + crests + fine + floor
 
       hmap[y * W + x] = h
       if (h < hMin) hMin = h
@@ -140,14 +141,14 @@ function renderTerrain(canvas) {
   const d      = img.data
 
   // Grazing light direction from upper-right
-  const lx =  0.60, ly = -0.64, lz = 0.44
+  const lx =  0.62, ly = -0.66, lz = 0.42
   const lLen = Math.sqrt(lx*lx + ly*ly + lz*lz)
 
   // Half-vector for Blinn-Phong specular glint
   const hvx = lx/lLen, hvy = ly/lLen, hvz = lz/lLen + 1.0
   const hvLen = Math.sqrt(hvx*hvx + hvy*hvy + hvz*hvz)
 
-  const surfScale = 10.5 / hRange
+  const surfScale = 26.0 / hRange
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
@@ -173,21 +174,21 @@ function renderTerrain(canvas) {
         nxn/nLen * hvx/hvLen +
         nyn/nLen * hvy/hvLen +
         nzn/nLen * hvz/hvLen
-      ), 48)
+      ), 60)
 
       const [r0, g0, b0] = bathyRGB(h)
 
-      // Extreme high-contrast shadow rendering
-      const shade = 0.05 + diff * 0.95
+      // High-contrast shadow rendering for sharp rugged relief
+      const shade = 0.02 + diff * 1.05
 
-      let r = r0 * shade + spec * 200
-      let g = g0 * shade + spec * 235
+      let r = r0 * shade + spec * 210
+      let g = g0 * shade + spec * 240
       let b = b0 * shade + spec * 255
 
       // Light vignette
       const vdx = (x / W - 0.5) * 2
       const vdy = (y / H - 0.5) * 2
-      const vig = 1.0 - Math.max(0, Math.sqrt(vdx*vdx + vdy*vdy) * 0.44 - 0.05) * 0.50
+      const vig = 1.0 - Math.max(0, Math.sqrt(vdx*vdx + vdy*vdy) * 0.40 - 0.05) * 0.50
 
       const i = (y * W + x) << 2
       d[i]     = clamp255(r * vig)
@@ -223,8 +224,8 @@ export default function OceanMap({ zones = allZones, height = 420, showHeat = tr
       {/* ── Canvas Terrain layer ── */}
       <canvas
         ref={canvasRef}
-        width={720}
-        height={432}
+        width={760}
+        height={456}
         className="absolute inset-0 h-full w-full"
         style={{ imageRendering: 'auto' }}
         aria-hidden="true"
