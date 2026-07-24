@@ -5,7 +5,8 @@ import Seo from '../components/Seo.jsx'
 import OceanMap from '../components/OceanMap.jsx'
 import OceanHealthGauge from '../components/OceanHealthGauge.jsx'
 import GuardianInsights from '../components/GuardianInsights.jsx'
-import { kpis, detections, riskTrend, fleetHealthIndex, fleet } from '../data/mockData.js'
+import { useApp } from '../context/AppContext.jsx'
+import { fleet } from '../data/mockData.js'
 
 const sevBorder = { critical: '#ff5a4d', warning: '#ffb020', info: '#2ec16e' }
 const sevBg     = { critical: 'rgba(255,90,77,0.04)', warning: 'rgba(255,176,32,0.04)', info: 'rgba(46,193,110,0.04)' }
@@ -51,15 +52,31 @@ function Kpi({ icon: Icon, label, value, accent, note }) {
 }
 
 export default function Dashboard() {
-  const [alertsCount, setAlertsCount] = useState(kpis.activeAlerts)
-  const [updated, setUpdated]         = useState('just now')
+  const { zones, detections, fleetHealth, activeAlertsCount } = useApp()
+  const [updated, setUpdated] = useState('just now')
 
-  // simulate a "live" feed (demo only)
+  // Calculate dynamic KPIs from context state
+  const plasticHotspots = zones.filter((z) => z.plastic >= 2).length
+  const totalGhostNets = zones.reduce((s, z) => s + z.ghostNets, 0)
+  const maxBleaching = Math.max(...zones.map((z) => z.bleaching))
+  const bleachingLabel = maxBleaching === 3 ? 'CRITICAL' : maxBleaching === 2 ? 'HIGH' : maxBleaching === 1 ? 'MODERATE' : 'LOW'
+  const bleachingAccent = maxBleaching >= 2 ? '#ff5a4d' : maxBleaching === 1 ? '#ffb020' : '#2ec16e'
+
+  // Dynamic 7-day trend where today (Sun) syncs with the live simulated health score
+  const dynamicRiskTrend = [
+    { day: 'Mon', index: 54 },
+    { day: 'Tue', index: 60 },
+    { day: 'Wed', index: 58 },
+    { day: 'Thu', index: 67 },
+    { day: 'Fri', index: 64 },
+    { day: 'Sat', index: 71 },
+    { day: 'Sun', index: fleetHealth },
+  ]
+
   useEffect(() => {
     const t = setInterval(() => {
-      setAlertsCount((n) => Math.max(4, n + (Math.random() > 0.5 ? 1 : -1)))
       setUpdated('just now')
-    }, 5000)
+    }, 10000)
     return () => clearInterval(t)
   }, [])
 
@@ -85,10 +102,10 @@ export default function Dashboard() {
 
         {/* ── KPI row ── */}
         <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4 sm:gap-4">
-          <Kpi icon={AlertTriangle}   label="Active Alerts"   value={alertsCount}           accent="#ff5a4d" note="live" />
-          <Kpi icon={Trash2}          label="Plastic Hotspots" value={kpis.plasticHotspots}  accent="#ffb020" note="zones flagged" />
-          <Kpi icon={Waypoints}       label="Ghost Nets"       value={kpis.ghostNets}         accent="#c8dff0" note="detected" />
-          <Kpi icon={ThermometerSun}  label="Bleaching Risk"   value={kpis.bleachingRisk}    accent="#ff5a4d" note="reef zone C-4" />
+          <Kpi icon={AlertTriangle}   label="Active Alerts"   value={activeAlertsCount}      accent="#ff5a4d" note="unresolved" />
+          <Kpi icon={Trash2}          label="Plastic Hotspots" value={plasticHotspots}        accent="#ffb020" note="zones flagged" />
+          <Kpi icon={Waypoints}       label="Ghost Nets"       value={totalGhostNets}         accent="#c8dff0" note="net count" />
+          <Kpi icon={ThermometerSun}  label="Bleaching Risk"   value={bleachingLabel}         accent={bleachingAccent} note="thermal stress" />
         </div>
 
         {/* ── Guardian AI insights ── */}
@@ -103,10 +120,10 @@ export default function Dashboard() {
           </Panel>
 
           <Panel title="Ocean Health Index" extra="★ signature">
-            <OceanHealthGauge score={fleetHealthIndex} size={230} />
+            <OceanHealthGauge score={fleetHealth} size={230} />
             <div className="mt-5 space-y-2.5 text-sm text-textmut">
               <div className="flex items-center gap-2">
-                <Radio className="h-4 w-4 shrink-0 text-health" />
+                <Radio className="h-4 w-4 shrink-0 text-health animate-pulse" />
                 <span>{fleet.drones.online} drones online</span>
               </div>
               <div className="flex items-center gap-2">
@@ -124,7 +141,7 @@ export default function Dashboard() {
         {/* ── Feed + chart ── */}
         <div className="mt-4 grid gap-4 lg:grid-cols-3">
           <Panel title="AI Detection Feed" extra="auto-flagged" className="lg:col-span-2">
-            <ul className="space-y-2.5">
+            <ul className="space-y-2.5 max-h-[340px] overflow-y-auto pr-1">
               {detections.map((d) => (
                 <li
                   key={d.id}
@@ -151,7 +168,7 @@ export default function Dashboard() {
 
           <Panel title="7-Day Risk Index">
             <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={riskTrend} margin={{ top: 10, right: 6, left: 6, bottom: 0 }}>
+              <AreaChart data={dynamicRiskTrend} margin={{ top: 10, right: 6, left: 6, bottom: 0 }}>
                 <defs>
                   <linearGradient id="riskFill" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%"   stopColor="#12b5b0" stopOpacity={0.45} />
@@ -175,7 +192,7 @@ export default function Dashboard() {
               </AreaChart>
             </ResponsiveContainer>
             <p className="mt-2 text-xs leading-relaxed text-textmut/75">
-              Higher index = healthier ocean. Trending upward this week.
+              Higher index = healthier ocean. Trending dynamically with simulation state.
             </p>
           </Panel>
         </div>

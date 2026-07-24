@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Download, AlertTriangle, Clock, CheckCircle2, Inbox } from 'lucide-react'
+import { Download, AlertTriangle, Clock, CheckCircle2, Inbox, Sparkles } from 'lucide-react'
 import Seo from '../components/Seo.jsx'
 import { Container, SectionHeading, Badge } from '../components/ui.jsx'
-import { alerts } from '../data/mockData.js'
+import { useApp } from '../context/AppContext.jsx'
 
 const severities = ['All', 'Critical', 'High', 'Medium', 'Low']
 const statusColor = {
@@ -26,6 +26,7 @@ function exportCsv(rows) {
 }
 
 export default function Alerts() {
+  const { alerts, setActiveReport, triggerSound } = useApp()
   const [filter, setFilter] = useState('All')
   const rows = filter === 'All' ? alerts : alerts.filter((a) => a.severity === filter)
 
@@ -66,7 +67,10 @@ export default function Alerts() {
               <button
                 key={s}
                 type="button"
-                onClick={() => setFilter(s)}
+                onClick={() => {
+                  setFilter(s)
+                  triggerSound('click')
+                }}
                 className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-150 ${
                   filter === s ? 'bg-teal text-white shadow-sm shadow-teal/30' : 'bg-teal/10 text-tealink hover:bg-teal/20 hover:shadow-sm'
                 }`}
@@ -77,8 +81,11 @@ export default function Alerts() {
           </div>
           <button
             type="button"
-            onClick={() => exportCsv(rows)}
-            className="inline-flex items-center gap-2 rounded-lg border border-teal/30 px-4 py-2 text-sm font-semibold text-tealink transition-colors duration-150 hover:border-teal/50 hover:bg-teal/5 active:scale-95"
+            onClick={() => {
+              exportCsv(rows)
+              triggerSound('success')
+            }}
+            className="inline-flex items-center gap-2 rounded-lg border border-teal/30 px-4 py-2 text-sm font-semibold text-tealink transition-colors duration-150 hover:border-teal/50 hover:bg-teal/5 active:scale-95 cursor-pointer"
           >
             <Download className="h-4 w-4" /> Export CSV
           </button>
@@ -86,7 +93,7 @@ export default function Alerts() {
 
         {/* Table */}
         <div className="overflow-x-auto rounded-2xl border border-teal/15 bg-white shadow-sm">
-          <table className="w-full min-w-[720px] text-left text-sm">
+          <table className="w-full min-w-[760px] text-left text-sm">
             <thead className="bg-teal/5 text-textd/80">
               <tr>
                 <th className="px-4 py-3.5 font-semibold">Alert ID</th>
@@ -95,6 +102,7 @@ export default function Alerts() {
                 <th className="px-4 py-3.5 font-semibold">Severity</th>
                 <th className="px-4 py-3.5 font-semibold">Status</th>
                 <th className="px-4 py-3.5 font-semibold">Raised</th>
+                <th className="px-4 py-3.5 font-semibold">Mitigation</th>
               </tr>
             </thead>
             <tbody>
@@ -111,6 +119,23 @@ export default function Alerts() {
                     </span>
                   </td>
                   <td className="px-4 py-3.5 text-textd/55 tabular-nums">{a.raised}</td>
+                  <td className="px-4 py-3.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveReport({
+                          type: 'alert',
+                          id: a.id,
+                          name: a.type,
+                          metrics: { id: a.id, zone: a.zone, type: a.type, severity: a.severity, status: a.status, raised: a.raised }
+                        })
+                        triggerSound('click')
+                      }}
+                      className="inline-flex items-center gap-1 rounded-lg bg-teal/10 hover:bg-teal px-2.5 py-1 text-xs font-semibold text-tealink hover:text-white transition-all active:scale-95 cursor-pointer"
+                    >
+                      <Sparkles className="h-3 w-3" /> Report
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

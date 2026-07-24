@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
+import { AppProvider } from './context/AppContext.jsx'
 
 const Home = lazy(() => import('./pages/Home.jsx'))
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
@@ -27,22 +28,25 @@ function Loader() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <ScrollToTop />
-      <Suspense fallback={<Loader />}>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/risk-map" element={<RiskMap />} />
-            <Route path="/biodiversity" element={<Biodiversity />} />
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/simulator" element={<Simulator />} />
-            <Route path="/about" element={<About />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
+    <AppProvider>
+      <BrowserRouter>
+        <ScrollToTop />
+        <Suspense fallback={<Loader />}>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/risk-map" element={<RiskMap />} />
+              <Route path="/biodiversity" element={<Biodiversity />} />
+              <Route path="/alerts" element={<Alerts />} />
+              <Route path="/simulator" element={<Simulator />} />
+              <Route path="/about" element={<About />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </AppProvider>
   )
 }
+

@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { TrendingUp, TrendingDown, Minus, Fish, ShieldAlert } from 'lucide-react'
 import Seo from '../components/Seo.jsx'
 import { Container, SectionHeading, Badge } from '../components/ui.jsx'
-import { species } from '../data/mockData.js'
+import { useApp } from '../context/AppContext.jsx'
+import { species as initialSpecies, oceanHealthIndex } from '../data/mockData.js'
 
 const statusTone = {
   'Vulnerable': 'warning',
@@ -19,17 +20,35 @@ const trendColor = { up: '#2ec16e', down: '#ff5a4d', flat: '#9fb6cc' }
 const trendLabel = { up: 'Increasing', down: 'Declining', flat: 'Stable' }
 
 const filters = ['All', 'Critically Endangered', 'Endangered', 'Vulnerable']
-const maxSightings = Math.max(...species.map((s) => s.sightings))
+const maxSightings = Math.max(...initialSpecies.map((s) => s.sightings))
 
 export default function Biodiversity() {
+  const { zones } = useApp()
   const [filter, setFilter] = useState('All')
-  const list = filter === 'All' ? species : species.filter((s) => s.status === filter)
+
+  // Calculate dynamic trends based on the current health score of each species' zone
+  const speciesList = initialSpecies.map((s) => {
+    const zone = zones.find((z) => z.id === s.zone)
+    if (!zone) return s
+    const score = oceanHealthIndex(zone)
+    let trend = s.trend // fallback
+    if (score >= 72) {
+      trend = 'up'
+    } else if (score < 48) {
+      trend = 'down'
+    } else {
+      trend = 'flat'
+    }
+    return { ...s, trend }
+  })
+
+  const list = filter === 'All' ? speciesList : speciesList.filter((s) => s.status === filter)
 
   const stats = [
-    { value: species.length, label: 'Species tracked', color: '#0b6d69' },
-    { value: species.filter((s) => s.status === 'Critically Endangered').length, label: 'Critically endangered', color: '#ff5a4d' },
-    { value: species.filter((s) => s.status === 'Endangered').length, label: 'Endangered', color: '#ff7a45' },
-    { value: species.reduce((n, s) => n + s.sightings, 0), label: 'Total sightings', color: '#0b6d69' },
+    { value: speciesList.length, label: 'Species tracked', color: '#0b6d69' },
+    { value: speciesList.filter((s) => s.status === 'Critically Endangered').length, label: 'Critically endangered', color: '#ff5a4d' },
+    { value: speciesList.filter((s) => s.status === 'Endangered').length, label: 'Endangered', color: '#ff7a45' },
+    { value: speciesList.reduce((n, s) => n + s.sightings, 0), label: 'Total sightings', color: '#0b6d69' },
   ]
 
   return (
@@ -123,8 +142,7 @@ export default function Biodiversity() {
         <div className="mt-8 flex items-start gap-3 rounded-2xl border border-warn/30 bg-warn/5 p-5">
           <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-warn" aria-hidden="true" />
           <p className="text-sm text-textd/80">
-            {species.filter((s) => s.status === 'Critically Endangered').length} critically endangered species are being
-            actively tracked. Declining sighting trends trigger automatic alerts to conservation partners for rapid response.
+            Endangered species sighting trends correlate dynamically with regional zone health scores. Underperforming zones (health index below 48) display declining habitat status indicators.
           </p>
         </div>
       </Container>

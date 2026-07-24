@@ -68,3 +68,37 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Ecological Report CSS Print Stylesheet
+   ───────────────────────────────────────────────────────────────────────────── */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  /* Hide navigation controls, widgets, banners, footers */
+  header, footer, nav, button, .no-print, #main > :not(.fixed) {
+    display: none !important;
+  }
+
+  /* Expand modal content to fill paper page */
+  .modal-print-layout {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+}

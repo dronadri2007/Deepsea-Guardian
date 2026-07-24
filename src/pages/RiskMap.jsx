@@ -1,9 +1,12 @@
 import Seo from '../components/Seo.jsx'
 import { Container, SectionHeading, Badge } from '../components/ui.jsx'
 import OceanMap from '../components/OceanMap.jsx'
-import { zones, oceanHealthIndex, healthBand } from '../data/mockData.js'
+import { useApp } from '../context/AppContext.jsx'
+import { oceanHealthIndex, healthBand } from '../data/mockData.js'
 
 export default function RiskMap() {
+  const { zones } = useApp()
+
   return (
     <div className="py-14">
       <Seo
