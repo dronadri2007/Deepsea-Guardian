@@ -4,6 +4,7 @@ import { AlertTriangle, Trash2, Waypoints, ThermometerSun, Radio, Satellite } fr
 import Seo from '../components/Seo.jsx'
 import OceanMap from '../components/OceanMap.jsx'
 import OceanHealthGauge from '../components/OceanHealthGauge.jsx'
+import GuardianInsights from '../components/GuardianInsights.jsx'
 import { kpis, detections, riskTrend, fleetHealthIndex, fleet } from '../data/mockData.js'
 
 const sevBorder = { critical: '#ff5a4d', warning: '#ffb020', info: '#2ec16e' }
@@ -88,6 +89,11 @@ export default function Dashboard() {
           <Kpi icon={Trash2}          label="Plastic Hotspots" value={kpis.plasticHotspots}  accent="#ffb020" note="zones flagged" />
           <Kpi icon={Waypoints}       label="Ghost Nets"       value={kpis.ghostNets}         accent="#c8dff0" note="detected" />
           <Kpi icon={ThermometerSun}  label="Bleaching Risk"   value={kpis.bleachingRisk}    accent="#ff5a4d" note="reef zone C-4" />
+        </div>
+
+        {/* ── Guardian AI insights ── */}
+        <div className="mt-4">
+          <GuardianInsights />
         </div>
 
         {/* ── Map + gauge ── */}
