@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink:      #0a2540;
+  --color-ink2:     #0d1b2e;
+  --color-panel:    #10263e;
+  --color-borderd:  #1d3d5c;
+  --color-teal:     #12b5b0;
+  --color-tealink:  #0b6d69;
+  --color-teallite: #4fd0cb;
+  --color-health:   #2ec16e;
+  --color-alert:    #ff5a4d;
+  --color-warn:     #ffb020;
+  --color-sky:      #e8f4fc;
+  --color-textd:    #0b2f4f;
+  --color-textmut:  #9fb6cc;
+  --font-head: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { @apply bg-sky text-textd font-body antialiased; }
+  h1, h2, h3, h4 { @apply font-head; }
+  :focus-visible { outline: 2px solid var(--color-teal); outline-offset: 2px; }
+}

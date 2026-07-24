@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://deepsea-guardian.vercel.app/sitemap.xml
