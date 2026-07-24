@@ -4,7 +4,7 @@ import { Map, ScanEye, Activity, Gauge, Fish, BellRing, ArrowRight } from 'lucid
 import Seo from '../components/Seo.jsx'
 import { Container, SectionHeading } from '../components/ui.jsx'
 import OceanHealthGauge from '../components/OceanHealthGauge.jsx'
-import { problemStats, pipeline, features, fleetHealthIndex } from '../data/mockData.js'
+import { problemStats, pipeline, features, fleetHealthIndex, fleet } from '../data/mockData.js'
 
 const iconMap = { Map, ScanEye, Activity, Gauge, Fish, BellRing }
 
@@ -60,6 +60,20 @@ export default function Home() {
               >
                 See the Risk Map
               </Link>
+            </div>
+
+            {/* Live status strip */}
+            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/60">
+              <span className="flex items-center gap-2 text-health">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-health" /> Live monitoring
+              </span>
+              <span><span className="font-semibold text-white">{fleet.drones.online}</span> drones</span>
+              <span className="text-white/25">·</span>
+              <span><span className="font-semibold text-white">{fleet.sensors.online}</span> IoT sensors</span>
+              <span className="text-white/25">·</span>
+              <span><span className="font-semibold text-white">6</span> zones</span>
+              <span className="text-white/25">·</span>
+              <span>Ocean Health Index <span className="font-semibold text-teallite">{fleetHealthIndex}</span></span>
             </div>
           </motion.div>
         </Container>
