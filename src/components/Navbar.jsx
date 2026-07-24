@@ -8,6 +8,7 @@ const links = [
   { to: '/risk-map', label: 'Risk Map' },
   { to: '/biodiversity', label: 'Biodiversity' },
   { to: '/alerts', label: 'Alerts' },
+  { to: '/simulator', label: 'Simulator' },
   { to: '/about', label: 'About' },
 ]
 

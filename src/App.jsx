@@ -7,6 +7,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
 const RiskMap = lazy(() => import('./pages/RiskMap.jsx'))
 const Biodiversity = lazy(() => import('./pages/Biodiversity.jsx'))
 const Alerts = lazy(() => import('./pages/Alerts.jsx'))
+const Simulator = lazy(() => import('./pages/Simulator.jsx'))
 const About = lazy(() => import('./pages/About.jsx'))
 const NotFound = lazy(() => import('./pages/NotFound.jsx'))
 
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="/risk-map" element={<RiskMap />} />
             <Route path="/biodiversity" element={<Biodiversity />} />
             <Route path="/alerts" element={<Alerts />} />
+            <Route path="/simulator" element={<Simulator />} />
             <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Route>
