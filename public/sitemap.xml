@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://deepsea-guardian.vercel.app/</loc></url>
-  <url><loc>https://deepsea-guardian.vercel.app/dashboard</loc></url>
-  <url><loc>https://deepsea-guardian.vercel.app/risk-map</loc></url>
-  <url><loc>https://deepsea-guardian.vercel.app/biodiversity</loc></url>
-  <url><loc>https://deepsea-guardian.vercel.app/alerts</loc></url>
-  <url><loc>https://deepsea-guardian.vercel.app/about</loc></url>
+  <url><loc>https://deepsea-guardian-five.vercel.app/</loc></url>
+  <url><loc>https://deepsea-guardian-five.vercel.app/dashboard</loc></url>
+  <url><loc>https://deepsea-guardian-five.vercel.app/risk-map</loc></url>
+  <url><loc>https://deepsea-guardian-five.vercel.app/biodiversity</loc></url>
+  <url><loc>https://deepsea-guardian-five.vercel.app/alerts</loc></url>
+  <url><loc>https://deepsea-guardian-five.vercel.app/about</loc></url>
 </urlset>
