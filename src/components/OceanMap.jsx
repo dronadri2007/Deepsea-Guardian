@@ -1,8 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { zones as allZones, oceanHealthIndex, healthBand, detections } from '../data/mockData.js'
+import { zones as allZones, oceanHealthIndex, healthBand, detections, sensorLayers } from '../data/mockData.js'
 
 const riskColor = { high: '#ff5a4d', moderate: '#ffb020', low: '#12b5b0' }
 const sevLabel = ['None', 'Low', 'Moderate', 'High']
+const LAYERS = [
+  { key: 'all', label: 'All' },
+  { key: 'drones', label: 'Drones' },
+  { key: 'sonar', label: 'Sonar' },
+  { key: 'satellite', label: 'Satellite' },
+  { key: 'iot', label: 'IoT' },
+]
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Noise helpers for realistic geological FBM noise
@@ -200,6 +207,7 @@ function renderTerrain(canvas) {
 export default function OceanMap({ zones = allZones, height = 420, showHeat = true }) {
   const canvasRef = useRef(null)
   const [selected, setSelected] = useState(null)
+  const [layer, setLayer] = useState('all')
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -301,8 +309,24 @@ export default function OceanMap({ zones = allZones, height = 420, showHeat = tr
         />
       </svg>
 
-      {/* ── Heat blobs ── */}
-      {showHeat && zones.map((z) => (
+      {/* ── Source-layer toggle ── */}
+      <div className="absolute left-3 top-3 z-30 flex flex-wrap gap-1 rounded-xl border border-white/10 bg-black/55 p-1 backdrop-blur-sm">
+        {LAYERS.map((l) => (
+          <button
+            key={l.key}
+            type="button"
+            onClick={() => { setLayer(l.key); setSelected(null) }}
+            className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors ${
+              layer === l.key ? 'bg-teal text-white' : 'text-white/70 hover:bg-white/10'
+            }`}
+          >
+            {l.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Heat blobs (All view) ── */}
+      {layer === 'all' && showHeat && zones.map((z) => (
         <span
           key={`heat-${z.id}`}
           className="pointer-events-none absolute rounded-full"
@@ -315,8 +339,71 @@ export default function OceanMap({ zones = allZones, height = 420, showHeat = tr
         />
       ))}
 
-      {/* ── Zone markers (clickable) + hover tooltips ── */}
-      {zones.map((z) => (
+      {/* ── Satellite pass swath ── */}
+      {layer === 'satellite' && (
+        <div
+          className="pointer-events-none absolute left-0 w-full"
+          style={{
+            top: `${sensorLayers.satellite.swath.top}%`,
+            height: `${sensorLayers.satellite.swath.height}%`,
+            background: 'linear-gradient(180deg, transparent, rgba(255,255,255,0.14), transparent)',
+            borderTop: '1px dashed rgba(255,255,255,0.4)',
+            borderBottom: '1px dashed rgba(255,255,255,0.4)',
+          }}
+        />
+      )}
+
+      {/* ── Drones patrol path ── */}
+      {layer === 'drones' && (
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
+          <polyline
+            points={sensorLayers.drones.map((d) => `${d.x}%,${d.y}%`).join(' ')}
+            fill="none" stroke="#4fd0cb" strokeWidth="1.5" strokeDasharray="5 5" opacity="0.7"
+          />
+        </svg>
+      )}
+
+      {/* ── Layer-specific markers ── */}
+      {layer === 'drones' && sensorLayers.drones.map((d) => (
+        <div key={d.id} className="group absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${d.x}%`, top: `${d.y}%` }}>
+          <span className="grid h-6 w-6 -translate-y-1 place-items-center rounded-full border border-white/40 bg-ink2/80 text-teallite" style={{ boxShadow: '0 0 10px 2px rgba(79,208,203,0.5)' }}>▲</span>
+          <div className="pointer-events-none absolute left-1/2 top-6 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/15 bg-ink2/95 px-2.5 py-1.5 text-xs text-white shadow-xl group-hover:block">
+            <b>{d.id}</b> · {d.status}<br /><span className="text-textmut">battery {d.battery}%</span>
+          </div>
+        </div>
+      ))}
+
+      {layer === 'sonar' && sensorLayers.sonar.map((s) => (
+        <div key={s.id} className="group absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${s.x}%`, top: `${s.y}%` }}>
+          <span className="absolute -inset-3 animate-ping rounded-full border border-cyan-300/60" />
+          <span className="block h-2.5 w-2.5 rounded-full bg-cyan-300" style={{ boxShadow: '0 0 8px 2px rgba(103,232,249,0.7)' }} />
+          <div className="pointer-events-none absolute left-1/2 top-5 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/15 bg-ink2/95 px-2.5 py-1.5 text-xs text-white shadow-xl group-hover:block">
+            Sonar · {s.label}
+          </div>
+        </div>
+      ))}
+
+      {layer === 'satellite' && sensorLayers.satellite.flags.map((f) => (
+        <div key={f.id} className="group absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${f.x}%`, top: `${f.y}%` }}>
+          <span className="block h-3 w-3 rotate-45 border-2 border-white bg-warn" />
+          <div className="pointer-events-none absolute left-1/2 top-5 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/15 bg-ink2/95 px-2.5 py-1.5 text-xs text-white shadow-xl group-hover:block">
+            Satellite · {f.label}
+          </div>
+        </div>
+      ))}
+
+      {layer === 'iot' && sensorLayers.iot.map((s) => (
+        <div key={s.id} className="group absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${s.x}%`, top: `${s.y}%` }}>
+          <span className="block h-2.5 w-2.5 rounded-sm bg-health" style={{ boxShadow: '0 0 8px 2px rgba(46,193,110,0.6)' }} />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 whitespace-nowrap rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">{s.temp}°C</span>
+          <div className="pointer-events-none absolute left-1/2 top-5 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/15 bg-ink2/95 px-2.5 py-1.5 text-xs text-white shadow-xl group-hover:block">
+            <b>{s.id}</b><br /><span className="text-textmut">{s.temp}°C · pH {s.ph}</span>
+          </div>
+        </div>
+      ))}
+
+      {/* ── Zone markers (clickable) — All view ── */}
+      {layer === 'all' && zones.map((z) => (
         <button
           type="button"
           key={z.id}

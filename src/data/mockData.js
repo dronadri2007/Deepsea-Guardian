@@ -124,3 +124,33 @@ export const features = [
   { icon: 'Fish', title: 'Biodiversity Tracker', text: 'Monitor endangered species populations and sighting trends.' },
   { icon: 'BellRing', title: 'Alerts & Reports', text: 'Actionable, shareable insights for authorities, researchers & NGOs.' },
 ];
+
+// ---- Multi-source sensor network layers (x/y are percent positions) ----
+export const sensorLayers = {
+  drones: [
+    { id: 'DRN-01', x: 30, y: 40, battery: 82, status: 'surveying' },
+    { id: 'DRN-02', x: 66, y: 58, battery: 64, status: 'surveying' },
+    { id: 'DRN-03', x: 74, y: 30, battery: 91, status: 'returning' },
+    { id: 'DRN-04', x: 24, y: 66, battery: 55, status: 'surveying' },
+  ],
+  sonar: [
+    { id: 'S1', x: 34, y: 42, label: 'Hard contact' },
+    { id: 'S2', x: 48, y: 33, label: 'Debris field' },
+    { id: 'S3', x: 80, y: 47, label: 'Net cluster' },
+    { id: 'S4', x: 62, y: 55, label: 'Sediment plume' },
+  ],
+  satellite: {
+    swath: { top: 12, height: 34 },   // percent band representing the orbital pass
+    flags: [
+      { id: 'SAT1', x: 34, y: 30, label: 'Surface plastic' },
+      { id: 'SAT2', x: 62, y: 38, label: 'Turbidity spike' },
+    ],
+  },
+  iot: [
+    { id: 'IOT-14', x: 20, y: 62, temp: 3.8, ph: 7.9 },
+    { id: 'IOT-22', x: 48, y: 33, temp: 6.1, ph: 7.7 },
+    { id: 'IOT-31', x: 71, y: 71, temp: 9.4, ph: 8.0 },
+    { id: 'IOT-09', x: 62, y: 55, temp: 4.2, ph: 7.8 },
+    { id: 'IOT-05', x: 80, y: 47, temp: 7.6, ph: 7.6 },
+  ],
+};
