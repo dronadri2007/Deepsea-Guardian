@@ -8,7 +8,12 @@ import { zones, oceanHealthIndex, healthBand } from '../data/mockData.js'
 const riskSteps = ['low', 'moderate', 'high']
 const sev4 = ['None', 'Low', 'Moderate', 'High']
 
-function Slider({ icon: Icon, label, value, max, onChange, valueLabel, accent }) {
+// Real-world descriptors so the sliders mean something concrete
+const plasticDesc = ['Pristine water', '~2 t/km² microplastics', '~8 t/km² accumulation', '~15+ t/km² heavy debris']
+const bleachDesc = ['No thermal stress', '+0.5°C anomaly', '+1.2°C anomaly', '+1.8°C — bleaching onset']
+const riskDesc = ['~12% incident probability', '~38% incident probability', '~71% incident probability']
+
+function Slider({ icon: Icon, label, value, max, onChange, valueLabel, desc, accent }) {
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -27,6 +32,7 @@ function Slider({ icon: Icon, label, value, max, onChange, valueLabel, accent })
         className="mt-2 w-full accent-teal"
         aria-label={label}
       />
+      {desc && <p className="mt-1 text-xs text-textd/55">{desc}</p>}
     </div>
   )
 }
@@ -61,6 +67,18 @@ export default function Simulator() {
       ? `These added pressures would drop the index by ${Math.abs(delta)} points, down to ${sim} (${band.label}).`
       : `No net change — the index holds at ${sim} (${band.label}).`
 
+  // Estimated real-world impact (illustrative modelling)
+  const mag = Math.abs(delta)
+  const impact = [
+    { value: `${(mag * 120).toLocaleString()} ha`, label: 'Seafloor habitat affected' },
+    { value: `${(mag * 45).toLocaleString()}/yr`, label: 'Marine animals impacted' },
+    { value: `${(mag * 8).toLocaleString()} t`, label: 'Blue-carbon CO₂ at stake' },
+  ]
+  const outlook =
+    sim >= 70 ? 'Full ecosystem recovery likely within 3–5 years.'
+    : sim >= 40 ? 'Partial recovery possible with sustained intervention.'
+    : 'Critical — risk of irreversible biodiversity loss without action.'
+
   return (
     <div className="py-14">
       <Seo
@@ -90,10 +108,10 @@ export default function Simulator() {
             </select>
 
             <div className="mt-6 space-y-6">
-              <Slider icon={Trash2} label="Plastic accumulation" value={plastic} max={3} onChange={setPlastic} valueLabel={sev4[plastic]} accent="#ffb020" />
-              <Slider icon={ThermometerSun} label="Coral bleaching" value={bleaching} max={3} onChange={setBleaching} valueLabel={sev4[bleaching]} accent="#ff5a4d" />
-              <Slider icon={Waypoints} label="Ghost nets" value={ghostNets} max={5} onChange={setGhostNets} valueLabel={`${ghostNets} nets`} accent="#0b6d69" />
-              <Slider icon={ShieldAlert} label="Predicted risk level" value={riskIdx} max={2} onChange={setRiskIdx} valueLabel={riskSteps[riskIdx]} accent="#ff5a4d" />
+              <Slider icon={Trash2} label="Plastic accumulation" value={plastic} max={3} onChange={setPlastic} valueLabel={sev4[plastic]} desc={plasticDesc[plastic]} accent="#ffb020" />
+              <Slider icon={ThermometerSun} label="Coral bleaching" value={bleaching} max={3} onChange={setBleaching} valueLabel={sev4[bleaching]} desc={bleachDesc[bleaching]} accent="#ff5a4d" />
+              <Slider icon={Waypoints} label="Ghost nets" value={ghostNets} max={5} onChange={setGhostNets} valueLabel={`${ghostNets} nets`} desc={`${ghostNets} net cluster${ghostNets !== 1 ? 's' : ''} · ~${(ghostNets * 0.6).toFixed(1)} t gear`} accent="#0b6d69" />
+              <Slider icon={ShieldAlert} label="Predicted risk level" value={riskIdx} max={2} onChange={setRiskIdx} valueLabel={riskSteps[riskIdx]} desc={riskDesc[riskIdx]} accent="#ff5a4d" />
             </div>
 
             <button
@@ -137,8 +155,26 @@ export default function Simulator() {
 
             <p className="mt-5 rounded-xl bg-panel p-4 text-sm leading-relaxed text-textmut">{insight}</p>
 
+            {/* Estimated real-world impact */}
+            <div className="mt-4">
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-health">
+                Estimated impact of this {delta >= 0 ? 'improvement' : 'decline'}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {impact.map((m) => (
+                  <div key={m.label} className="rounded-xl bg-panel p-3 text-center">
+                    <div className="font-head text-lg font-bold" style={{ color: band.color }}>{m.value}</div>
+                    <div className="mt-0.5 text-[10px] leading-tight text-textmut">{m.label}</div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 rounded-xl border border-white/10 bg-panel/60 p-3 text-xs text-textmut">
+                <span className="font-semibold text-white">Recovery outlook:</span> {outlook}
+              </p>
+            </div>
+
             <p className="mt-3 text-center text-xs text-textmut/60">
-              Powered by the same Ocean Health Index model used across the platform.
+              Estimates are illustrative, derived from the Ocean Health Index model.
             </p>
           </div>
         </div>
