@@ -52,15 +52,15 @@ function rfbm(x, y, octaves = 5) {
 // ─────────────────────────────────────────────────────────────────────────────
 function bathyRGB(t) {
   const stops = [
-    [0.00, [  3,  12, 120]],   // deepest cobalt
-    [0.12, [  6,  30, 190]],   // royal blue
-    [0.26, [ 10,  60, 228]],   // bright cobalt
-    [0.42, [ 12, 125, 222]],   // electric blue
-    [0.55, [  8, 176, 196]],   // turquoise
-    [0.68, [ 14, 208, 142]],   // teal
-    [0.80, [ 40, 228,  90]],   // emerald green
-    [0.90, [ 95, 244,  40]],   // bright green
-    [1.00, [165, 255,  22]],   // neon lime
+    [0.00, [  6,  18,  46]],   // abyss — deep navy black
+    [0.14, [ 10,  38,  82]],   // deep ocean blue
+    [0.30, [ 18,  66, 114]],   // ocean blue
+    [0.45, [ 28, 100, 140]],   // steel blue
+    [0.58, [ 42, 132, 146]],   // muted teal
+    [0.68, [ 58, 144, 124]],   // teal-green
+    [0.78, [ 92, 150,  92]],   // muted green shelf
+    [0.88, [140, 160,  82]],   // olive / khaki ridge
+    [1.00, [196, 196, 140]],   // sandy shallow highlight
   ]
   for (let i = 0; i < stops.length - 1; i++) {
     const [t0, c0] = stops[i]
@@ -170,12 +170,12 @@ function renderTerrain(canvas) {
 
       const [r0, g0, b0] = bathyRGB(h)
 
-      // High-contrast shadow rendering for varied rugged relief
-      const shade = 0.05 + diff * 1.0
+      // Natural relief shading (softer, more realistic than neon)
+      const shade = 0.10 + diff * 0.92
 
-      let r = r0 * shade + spec * 200
-      let g = g0 * shade + spec * 235
-      let b = b0 * shade + spec * 255
+      let r = r0 * shade + spec * 120
+      let g = g0 * shade + spec * 140
+      let b = b0 * shade + spec * 170
 
       // Light vignette
       const vdx = (x / W - 0.5) * 2
