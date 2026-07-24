@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Map, ScanEye, Activity, Gauge, Fish, BellRing, ArrowRight, Waves } from 'lucide-react'
+import { Map, ScanEye, Activity, Gauge, Fish, BellRing, ArrowRight } from 'lucide-react'
 import Seo from '../components/Seo.jsx'
 import { Container, SectionHeading } from '../components/ui.jsx'
 import OceanHealthGauge from '../components/OceanHealthGauge.jsx'
@@ -39,10 +39,7 @@ export default function Home() {
 
         <Container className="relative py-24 sm:py-32">
           <motion.div initial="hidden" animate="show" variants={fadeUp} className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-sm text-teallite ring-1 ring-white/10">
-              <Waves className="h-4 w-4" /> HackOcean 2026 · PS03
-            </span>
-            <h1 className="mt-6 font-head text-4xl font-extrabold leading-[1.15] tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="font-head text-4xl font-extrabold leading-[1.15] tracking-tight sm:text-5xl lg:text-6xl">
               Guarding the deep ocean —{' '}
               <span className="text-teallite">before the damage is done.</span>
             </h1>
