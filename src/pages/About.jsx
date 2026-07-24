@@ -90,14 +90,6 @@ export default function About() {
               </div>
             </div>
 
-            {/* Team card */}
-            <div className="rounded-2xl bg-ink p-6 text-white shadow-lg">
-              <h2 className="font-head text-lg font-bold">Team SRU</h2>
-              <p className="mt-2 text-sm leading-relaxed text-textmut">
-                HackOcean 2026 · National-Level Frontend Hackathon · Problem PS03 — DeepSea Guardian.
-                Data shown is representative for demonstration.
-              </p>
-            </div>
           </div>
         </div>
 
