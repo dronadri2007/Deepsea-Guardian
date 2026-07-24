@@ -52,15 +52,15 @@ function rfbm(x, y, octaves = 5) {
 // ─────────────────────────────────────────────────────────────────────────────
 function bathyRGB(t) {
   const stops = [
-    [0.00, [  6,  18,  46]],   // abyss — deep navy black
-    [0.14, [ 10,  38,  82]],   // deep ocean blue
-    [0.30, [ 18,  66, 114]],   // ocean blue
-    [0.45, [ 28, 100, 140]],   // steel blue
-    [0.58, [ 42, 132, 146]],   // muted teal
-    [0.68, [ 58, 144, 124]],   // teal-green
-    [0.78, [ 92, 150,  92]],   // muted green shelf
-    [0.88, [140, 160,  82]],   // olive / khaki ridge
-    [1.00, [196, 196, 140]],   // sandy shallow highlight
+    [0.00, [ 16,  46, 170]],   // deep royal blue
+    [0.16, [ 20,  74, 208]],   // bright ocean blue
+    [0.32, [ 26, 120, 214]],   // lighter blue
+    [0.46, [ 30, 164, 196]],   // blue-cyan slope
+    [0.58, [ 34, 190, 168]],   // cyan-teal
+    [0.68, [ 44, 200, 120]],   // teal-green
+    [0.78, [ 70, 204,  78]],   // grass green shelf
+    [0.88, [120, 214,  58]],   // bright green ridge
+    [1.00, [180, 226,  74]],   // yellow-green highlight
   ]
   for (let i = 0; i < stops.length - 1; i++) {
     const [t0, c0] = stops[i]
@@ -133,14 +133,14 @@ function renderTerrain(canvas) {
   const d      = img.data
 
   // Grazing light direction from upper-right
-  const lx =  0.60, ly = -0.66, lz = 0.45
+  const lx =  0.60, ly = -0.66, lz = 0.50
   const lLen = Math.sqrt(lx*lx + ly*ly + lz*lz)
 
   // Half-vector for Blinn-Phong specular glint
   const hvx = lx/lLen, hvy = ly/lLen, hvz = lz/lLen + 1.0
   const hvLen = Math.sqrt(hvx*hvx + hvy*hvy + hvz*hvz)
 
-  const surfScale = 20.0 / hRange
+  const surfScale = 16.0 / hRange
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
@@ -166,21 +166,21 @@ function renderTerrain(canvas) {
         nxn/nLen * hvx/hvLen +
         nyn/nLen * hvy/hvLen +
         nzn/nLen * hvz/hvLen
-      ), 55)
+      ), 50)
 
       const [r0, g0, b0] = bathyRGB(h)
 
-      // Natural relief shading (softer, more realistic than neon)
-      const shade = 0.10 + diff * 0.92
+      // Bright ambient keeps deep water luminous, ridges still shadowed
+      const shade = 0.42 + diff * 0.66
 
-      let r = r0 * shade + spec * 120
-      let g = g0 * shade + spec * 140
-      let b = b0 * shade + spec * 170
+      let r = r0 * shade + spec * 90
+      let g = g0 * shade + spec * 110
+      let b = b0 * shade + spec * 150
 
       // Light vignette
       const vdx = (x / W - 0.5) * 2
       const vdy = (y / H - 0.5) * 2
-      const vig = 1.0 - Math.max(0, Math.sqrt(vdx*vdx + vdy*vdy) * 0.40 - 0.05) * 0.50
+      const vig = 1.0 - Math.max(0, Math.sqrt(vdx*vdx + vdy*vdy) * 0.35 - 0.05) * 0.40
 
       const i = (y * W + x) << 2
       d[i]     = clamp255(r * vig)
