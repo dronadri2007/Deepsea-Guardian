@@ -77,9 +77,8 @@ export default function RiskMap() {
           <span className="font-semibold text-textd/70">Health score:</span>
           {[
             { label: 'Critical (0–39)', color: '#ff5a4d' },
-            { label: 'At Risk (40–59)', color: '#ffb020' },
-            { label: 'Fair (60–74)',    color: '#4fd0cb' },
-            { label: 'Good (75–100)',   color: '#2ec16e' },
+            { label: 'Moderate (40–69)', color: '#ffb020' },
+            { label: 'Good (70–100)',   color: '#2ec16e' },
           ].map(({ label, color }) => (
             <span key={label} className="flex items-center gap-1.5">
               <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: color }} />
